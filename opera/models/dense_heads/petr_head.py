@@ -242,13 +242,15 @@ class PETRHead(AnchorFreeHead):
 
         batch_size = mlvl_feats[0].size(0)
         input_img_h, input_img_w = img_metas[0]['batch_input_shape'] # TODO 이 딕셔너리 요소가 있다고...?
-        print(f"input_img_h: {input_img_h}, input_img_w: {input_img_w}")
+        print(f"input_img_h: {input_img_h}, input_img_w: {input_img_w}") 
+            #e.g) input_img_h: 800, input_img_w: 1199
         img_masks = mlvl_feats[0].new_ones(
             (batch_size, input_img_h, input_img_w))
             # torch.Tensor.new_ones(): 입력한 크기만큼의 1을 만듦
         for img_id in range(batch_size):
             img_h, img_w, _ = img_metas[img_id]['img_shape']
             print(f"{img_id}번의 img_h: {img_h}, img_w: {img_w}") # TODO 뒤로갈수록 피처맵 크기가 큰지 작은지 확인!
+            # e.g.) 0번의 img_h: 800, img_w: 1199
             img_masks[img_id, :img_h, :img_w] = 0
 
         mlvl_masks = []
@@ -262,6 +264,7 @@ class PETRHead(AnchorFreeHead):
             mlvl_masks.append(mask)
             print(f"new mask size: {mask.shape}")
                 # interpolate 결과(="mask"): (batch_size, feat의 height, feat의 width) 크기의 Tensor가 붙음
+                # e.g.) new mask size: torch.Size([1, 100, 150])
 
             # TODO 확인차 아래 두 줄로 나눠놨음
             # mlvl_positional_encodings.append(
@@ -269,9 +272,24 @@ class PETRHead(AnchorFreeHead):
             pos_encoding = self.positional_encoding(mlvl_masks[-1])
             mlvl_positional_encodings.append(pos_encoding)
             print(f"new pos_encoding size: {pos_encoding.shape}")
-                # positional_encoding 결과(="pos_encoding"): (batch_size, feat의 height, feat의 width) 크기의 Tensor가 붙음
+                # positional_encoding 결과(="pos_encoding"): (batch_size, embed_dim, feat의 height, feat의 width) 크기의 Tensor가 붙음
+                # e.g.) new pos_encoding size: torch.Size([1, 256, 100, 150])
+            """
+            new pos_encoding size: torch.Size([1, 256, 100, 150])
+            new mask size: torch.Size([1, 50, 75])
+            new pos_encoding size: torch.Size([1, 256, 50, 75])
+            new mask size: torch.Size([1, 25, 38])
+            new pos_encoding size: torch.Size([1, 256, 25, 38])
+            new mask size: torch.Size([1, 13, 19])
+            new pos_encoding size: torch.Size([1, 256, 13, 19])
+            """
 
-        query_embeds = self.query_embedding.weight #Embedding 모듈(default로 따지면 100 -> 256 * 2)의 가중치. 실제로는 [300, 512] 나오는 듯
+        print(f"mlvl_masks size (<list>): {len(mlvl_masks)}")
+        print(f"mlvl_positional_encodings size (<list>): {len(mlvl_positional_encodings)}")
+
+        query_embeds = self.query_embedding.weight 
+            #Embedding 모듈(default로 따지면 100 -> 256 * 2)의 가중치. 실제로는 [300, 512] 나오는 듯
+            # query_embeds size: torch.Size([300, 512])
         print(f"query_embeds size: {query_embeds.shape}")
         
         hs, init_reference, inter_references, \
@@ -288,6 +306,8 @@ class PETRHead(AnchorFreeHead):
             ) # 트랜스포머
         hs = hs.permute(0, 2, 1, 3)
         print(f"hs size: {hs.shape}")
+        # hs size: torch.Size([3, 1, 300, 256])
+
         outputs_classes = []
         outputs_kpts = []
 
@@ -306,11 +326,22 @@ class PETRHead(AnchorFreeHead):
             print(f"{lvl}'s outputs_kpt size: {outputs_kpt.shape}")
             outputs_classes.append(outputs_class)
             outputs_kpts.append(outputs_kpt)
+            """
+            0's outputs_class size: torch.Size([1, 300, 1])
+            0's outputs_kpt size: torch.Size([1, 300, 34])
+            1's outputs_class size: torch.Size([1, 300, 1])
+            1's outputs_kpt size: torch.Size([1, 300, 34])
+            2's outputs_class size: torch.Size([1, 300, 1])
+            2's outputs_kpt size: torch.Size([1, 300, 34])
+            """
 
         outputs_classes = torch.stack(outputs_classes)
         print(f"outputs_classes size: {outputs_classes.shape}")
+        # outputs_classes size: torch.Size([3, 1, 300, 1])
+
         outputs_kpts = torch.stack(outputs_kpts)
         print(f"outputs_kpts size: {outputs_kpts.shape}")
+        # outputs_kpts size: torch.Size([3, 1, 300, 34])
 
         if hm_proto is not None: # TODO 여기도 보기
             # get heatmap prediction (training phase)
