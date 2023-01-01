@@ -137,7 +137,6 @@ class PETR(DETR):
 
         super(SingleStageDetector, self).forward_train(img, img_metas)
         x = self.extract_feat(img) # from backbone / 이미지 사이즈가 크면 간혹 여기서 죽기도 함
-        print("*"*30)
         # 아래 결과는 모두 img: torch.Size([2, 3, 909, 1028])일 때
 
         # print("************Feature Extracted!************") # 실행됨
@@ -171,8 +170,27 @@ class PETR(DETR):
 
         losses = self.bbox_head.forward_train(x, img_metas, gt_bboxes,
                                               gt_labels, gt_keypoints,
-                                              gt_areas, gt_bboxes_ignore) # 여기서 죽어유 / config에서 PETRHead로 정의함. forward_train은 400번
-        print(f"losses: {losses.shape} / {losses}")
+                                              gt_areas, gt_bboxes_ignore)
+            # bbox_head는 petr_head.py => losses의 type: dict
+        """
+        {'enc_loss_cls': tensor([2.2451], device='cuda:0', grad_fn=<MulBackward0>), 
+        'enc_loss_kpt': tensor(7.9735, device='cuda:0', grad_fn=<MulBackward0>), 
+        'loss_cls': tensor([1.8840], device='cuda:0', grad_fn=<MulBackward0>), 
+        'loss_kpt': tensor(8.4770, device='cuda:0', grad_fn=<MulBackward0>), 
+        'loss_oks': tensor(4.8181, device='cuda:0', grad_fn=<MulBackward0>), 
+        'd0.loss_cls': tensor([2.3254], device='cuda:0', grad_fn=<MulBackward0>), 
+        'd0.loss_kpt': tensor(8.4770, device='cuda:0', grad_fn=<MulBackward0>), 
+        'd0.loss_oks': tensor(4.8181, device='cuda:0', grad_fn=<MulBackward0>), 
+        'd1.loss_cls': tensor([2.1434], device='cuda:0', grad_fn=<MulBackward0>), 
+        'd1.loss_kpt': tensor(8.4770, device='cuda:0', grad_fn=<MulBackward0>), 
+        'd1.loss_oks': tensor(4.8181, device='cuda:0', grad_fn=<MulBackward0>), 
+        'loss_hm': tensor(152.6593, device='cuda:0', grad_fn=<MulBackward0>), 
+        'd0.loss_kpt_refine': tensor(9.6879, device='cuda:0', grad_fn=<MulBackward0>), 
+        'd0.loss_oks_refine': tensor(7.2271, device='cuda:0', grad_fn=<MulBackward0>), 
+        'd1.loss_kpt_refine': tensor(9.6879, device='cuda:0', grad_fn=<MulBackward0>), 
+        'd1.loss_oks_refine': tensor(7.2271, device='cuda:0', grad_fn=<MulBackward0>)}
+        """
+        # print(f"losses: {losses.shape} / {losses}") # TODO 잠시 멈춤. dict 요소에는 shape 속성 없어 에러 나서.
         
         return losses
 

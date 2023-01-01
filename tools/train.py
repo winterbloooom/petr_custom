@@ -235,7 +235,8 @@ def main():
         distributed=distributed,
         validate=(not args.no_validate),
         timestamp=timestamp,
-        meta=meta)
+        meta=meta) # /opera/apis/train.py의 함수임
+    print("after train_model in tools/train.py")
 
 
 if __name__ == '__main__':

@@ -27,15 +27,11 @@ def single_gpu_test(model,
     prog_bar = mmcv.ProgressBar(len(dataset))
     
     for i, data in enumerate(data_loader): #5000개
-        if i==2:
-            print("i'm 2")
-            break # TODO for test. 나중에 지우기
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
             
 
         # print(len(result))#1 -> 배치 하나라 0번만 있음. 
-        print("*"*100)
         # print(type(result[0])) #tuple
         # print(len(result[0])) #2 -> 한 배치 당 2개의 데이터 있음. [0]은 bbox로 크기 5의 배열, [1]은 관절 예측 데이터
         

@@ -242,4 +242,5 @@ def train_model(model,
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
-    runner.run(data_loaders, cfg.workflow)
+    runner.run(data_loaders, cfg.workflow) # 여기서 모델 돌림 => "/usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py"
+    print("Done in epoch_base_runner.py -> Here is apis/train.py")

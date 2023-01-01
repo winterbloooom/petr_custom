@@ -87,8 +87,8 @@ data = dict(
     
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/person_keypoints_train2017.json',
-        img_prefix=data_root + 'images/train2017/',
+        ann_file=data_root + 'annotations/person_keypoints_val2017.json',
+        img_prefix=data_root + 'images/val2017/',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
