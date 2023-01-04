@@ -1,5 +1,6 @@
 # Copyright (c) Hikvision Research Institute. All rights reserved.
 import os.path as osp
+import os, sys
 import pickle
 import shutil
 import tempfile
@@ -20,6 +21,8 @@ def single_gpu_test(model,
                     show=False,
                     out_dir=None,
                     show_score_thr=0.3):
+    print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+
     model.eval()
     results = []
     dataset = data_loader.dataset
@@ -29,7 +32,6 @@ def single_gpu_test(model,
     for i, data in enumerate(data_loader): #5000개
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
-            
 
         # print(len(result))#1 -> 배치 하나라 0번만 있음. 
         # print(type(result[0])) #tuple
@@ -88,14 +90,12 @@ def single_gpu_test(model,
                     bbox_results, mask_results = result[j]['ins_results']
                     result[j]['ins_results'] = (bbox_results,
                                                 encode_mask_results(mask_results))
-            
 
         results.extend(result)
         
-        for _ in range(batch_size):
+        for _ in range(batch_size): # batch_size=1
             prog_bar.update()
-
-        
+            print("")  # TODO 보기 편하게
 
     # print(f"results.type: {type(results)}") #list
     # print(f"results.len: {len(results)}") # dataset size -> 5000개

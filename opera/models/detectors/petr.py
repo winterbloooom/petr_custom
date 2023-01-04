@@ -13,6 +13,7 @@ from mmdet.models.detectors.detr import DETR
 from opera.core.keypoint import bbox_kpt2result, kpt_mapping_back
 from ..builder import DETECTORS
 
+import os, sys
 
 @DETECTORS.register_module()
 class PETR(DETR):
@@ -52,7 +53,9 @@ class PETR(DETR):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        print(f"img: {img.shape}") #torch.Size([2, 3, 965, 976]) 식 -> 한 배치에 이미지 2개인 듯
+        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+
+        # print(f"img: {img.shape}") #torch.Size([2, 3, 965, 976]) 식 -> 한 배치에 이미지 2개인 듯
         # print(f"img_metas: {img_metas[0]['ori_filename']}, {img_metas[1]['ori_filename']}")
         """
         [{'filename': './dataset/public/coco/images/train2017/000000239845.jpg', 'ori_filename': '000000239845.jpg', 

@@ -196,7 +196,7 @@ def main():
     meta['config'] = cfg.pretty_text
     # log some basic info
     logger.info(f'Distributed training: {distributed}')
-    logger.info(f'Config:\n{cfg.pretty_text}')
+    # logger.info(f'Config:\n{cfg.pretty_text}') # TODO 출력 많아서 일단 주석 처리
 
     cfg.device = get_device()
     # set random seeds
@@ -228,6 +228,7 @@ def main():
             CLASSES=datasets[0].CLASSES)
     # add an attribute for visualization convenience
     model.CLASSES = datasets[0].CLASSES
+    print("@@@@@@@@@@@@@@@ tools/train.py <main> @@@@@@@@@@@@@@@")
     train_model(
         model,
         datasets,

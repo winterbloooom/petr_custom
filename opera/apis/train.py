@@ -1,5 +1,5 @@
 # Copyright (c) Hikvision Research Institute. All rights reserved.
-import os
+import os, sys
 import random
 
 import numpy as np
@@ -122,6 +122,7 @@ def train_model(model,
                 validate=False,
                 timestamp=None,
                 meta=None):
+    print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
     cfg = compat_cfg(cfg)
     logger = get_root_logger(log_level=cfg.log_level)
@@ -242,5 +243,5 @@ def train_model(model,
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
-    runner.run(data_loaders, cfg.workflow) # 여기서 모델 돌림 => "/usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py"
+    runner.run(data_loaders, cfg.workflow) # 여기서 모델 돌림 => "/mmcv/runner/epoch_based_runner.py"
     print("Done in epoch_base_runner.py -> Here is apis/train.py")
