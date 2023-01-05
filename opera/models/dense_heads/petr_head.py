@@ -368,22 +368,31 @@ class PETRHead(AnchorFreeHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
+        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+
         kpt_preds, kpt_targets, area_targets, kpt_weights = refine_targets
         pos_inds = kpt_weights.sum(-1) > 0
+        print(f"len(pos_inds): {len(pos_inds)}")
+        # eval에서는 항상 10개 True로 고정
+        # train시에는 600개이고 요소값이 True/False 매번 다름
         if pos_inds.sum() == 0:
             pos_kpt_preds = torch.zeros_like(kpt_preds[:1])
             pos_img_inds = kpt_preds.new_zeros([1], dtype=torch.int64)
         else:
-            pos_kpt_preds = kpt_preds[pos_inds]
+            pos_kpt_preds = kpt_preds[pos_inds] # True인 것만 뽑음
             pos_img_inds = (pos_inds.nonzero() / self.num_query).squeeze(1).to(
                 torch.int64)
+        print(f"pos_img_inds(=transformer's forward_refine 'img_inds'): {pos_img_inds}") # TODO 뭐여>...???
+        #pos_img_inds(=transformer's forward_refine 'img_inds'): tensor([0, 1, 1, 1, 1], device='cuda:0') -> 요소는 0 또는 1이고 개수는 pos_inds에서 True의 개수
+        # eval이라면 10개가 다 0
+
         hs, init_reference, inter_references = self.transformer.forward_refine(
             mlvl_masks,
             memory,
             pos_kpt_preds.detach(),
             pos_img_inds,
             kpt_branches=self.refine_kpt_branches if self.with_kpt_refine else None,  # noqa:E501
-        )
+        ) # transformer.py의 forward_refine()
         hs = hs.permute(0, 2, 1, 3)
         outputs_kpts = []
 
@@ -487,16 +496,20 @@ class PETRHead(AnchorFreeHead):
 
         assert proposal_cfg is None, '"proposal_cfg" must be None'
         outs = self(x, img_metas) # 결과 도출. forward()로
+        """
+        [0] outputs_classes, [1] outputs_kpts, [2] enc_outputs_class, [3] enc_outputs_kpt.sigmoid(), [4] hm_proto, [5] memory, [6] mlvl_masks
+        """
         memory, mlvl_masks = outs[-2:]
-        outs = outs[:-2]
+        outs = outs[:-2] # [0] outputs_classes, [1] outputs_kpts, [2] enc_outputs_class, [3] enc_outputs_kpt, [4] hm_proto
         if gt_labels is None:
             loss_inputs = outs + (gt_bboxes, gt_keypoints, gt_areas, img_metas)
         else:
-            loss_inputs = outs + (gt_bboxes, gt_labels, gt_keypoints, gt_areas,
-                                  img_metas)
-        losses_and_targets = self.loss(
-            *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
+            loss_inputs = outs + (gt_bboxes, gt_labels, gt_keypoints, gt_areas, img_metas)
+        losses_and_targets = self.loss(*loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
         losses, refine_targets = losses_and_targets
+        # losses: dict
+        # refine_targets(tuple): (kpt_preds_list[-1], kpt_targets_list[-1], area_targets_list[-1], kpt_weights_list[-1]) => 디코더 마지막 것들
+
         # get pose refinement loss
         losses = self.forward_refine(memory, mlvl_masks, refine_targets,
                                      losses, img_metas)
@@ -548,15 +561,15 @@ class PETRHead(AnchorFreeHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
+        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+
         assert gt_bboxes_ignore is None, \
             f'{self.__class__.__name__} only supports ' \
             f'for gt_bboxes_ignore setting to None.'
 
         num_dec_layers = len(all_cls_scores)
         all_gt_labels_list = [gt_labels_list for _ in range(num_dec_layers)]
-        all_gt_keypoints_list = [
-            gt_keypoints_list for _ in range(num_dec_layers)
-        ]
+        all_gt_keypoints_list = [gt_keypoints_list for _ in range(num_dec_layers)]
         all_gt_areas_list = [gt_areas_list for _ in range(num_dec_layers)]
         img_metas_list = [img_metas for _ in range(num_dec_layers)]
 
@@ -565,6 +578,26 @@ class PETRHead(AnchorFreeHead):
                 self.loss_single, all_cls_scores, all_kpt_preds,
                 all_gt_labels_list, all_gt_keypoints_list,
                 all_gt_areas_list, img_metas_list)
+
+        # print(f"\tlosses_cls: {losses_cls[0].shape}\n\tlosses_kpt: {losses_kpt[0].shape}, \n\tlosses_oks: {losses_oks[0].shape}\
+        #  \n\tkpt_preds_list:{kpt_preds_list[0].shape} \n\tkpt_targets_list: {kpt_targets_list[0].shape}, \n\tarea_targets_list: {area_targets_list[0].shape}\n\tkpt_weights_list: {kpt_weights_list[0].shape}")
+        """
+        losses_cls[0] : torch.Size([1])
+        losses_kpt[0] : torch.Size([]), 
+        losses_oks[0] : torch.Size([])         
+        kpt_preds_list[0] :torch.Size([600, 34]) 
+        kpt_targets_list[0] : torch.Size([600, 34]), 
+        area_targets_list[0] : torch.Size([600])
+        kpt_weights_list[0] : torch.Size([600, 34])
+        """
+        # print(f"\tlosses_cls: {len(losses_cls)}\n\t{losses_cls}\n\tlosses_kpt: {len(losses_kpt)}\n\t{losses_kpt}\nkpt_preds_list:{len(kpt_preds_list)}")
+        """
+        losses_* : 3개 요소 포함 = 디코더 레이어 수
+        losses_cls = [tensor([1.6554], device='cuda:0', grad_fn=<MulBackward0>), tensor([1.2868], device='cuda:0', grad_fn=<MulBackward0>), tensor([1.6363], device='cuda:0', grad_fn=<MulBackward0>)]
+        losses_kpt = [tensor(10.2905, device='cuda:0', grad_fn=<MulBackward0>), tensor(10.2707, device='cuda:0', grad_fn=<MulBackward0>), tensor(10.2566, device='cuda:0', grad_fn=<MulBackward0>)]
+
+        *_list : 3개 요소 포함 = 디코더 레이어 수
+        """
 
         loss_dict = dict()
         # loss of proposal generated from encode feature map.
@@ -598,6 +631,24 @@ class PETRHead(AnchorFreeHead):
         loss_hm = self.loss_heatmap(hm_pred, hm_mask, gt_keypoints_list,
                                     gt_labels_list, gt_bboxes_list)
         loss_dict['loss_hm'] = loss_hm
+
+        # print(f"<loss_dict> ({len(loss_dict)})\n\t['enc_loss_cls'] : {loss_dict['enc_loss_cls'].shape}\n['enc_loss_kpt'] : {loss_dict['enc_loss_kpt'].shape} \
+        # \nloss_dict['loss_cls'] : {loss_dict['loss_cls'].shape}\nloss_dict['loss_kpt'] : {loss_dict['loss_kpt'].shape}\nloss_dict['loss_oks'] : {loss_dict['loss_oks'].shape} \
+        # \nloss_dict['loss_hm'] : {loss_dict['loss_hm'].shape}")
+        # \nloss_dict['0.loss_cls'] : {loss_dict['0.loss_cls'].shape}\nloss_dict['0.loss_kpt'] : {loss_dict['0.loss_kpt'].shape}\nloss_dict['0.loss_oks'] : {loss_dict['0.loss_oks'].shape} \
+        # \nloss_dict['1.loss_cls'] : {loss_dict['1.loss_cls'].shape}\nloss_dict['1.loss_kpt'] : {loss_dict['1.loss_kpt'].shape}\nloss_dict['1.loss_oks'] : {loss_dict['1.loss_oks'].shape}\
+        """
+        dict에 12개 보유
+        ['enc_loss_cls'] : torch.Size([1]) -> tensor([1.9326], device='cuda:0', grad_fn=<MulBackward0>)
+        ['enc_loss_kpt'] : torch.Size([]) -> 10.33849811553955  
+        loss_dict['loss_cls'] : torch.Size([1]) -> tensor([1.6363], device='cuda:0', grad_fn=<MulBackward0>)
+        loss_dict['loss_kpt'] : torch.Size([]) -> 10.256575584411621
+        loss_dict['loss_oks'] : torch.Size([]) -> 5.228019714355469 
+        loss_dict['loss_hm'] : torch.Size([]) -> 51.12300491333008
+        """
+        # print(f"['enc_loss_cls'] : {loss_dict['enc_loss_cls']}\n['enc_loss_kpt'] : {loss_dict['enc_loss_kpt']} \
+        # \nloss_dict['loss_cls'] : {loss_dict['loss_cls']}\nloss_dict['loss_kpt'] : {loss_dict['loss_kpt']}\nloss_dict['loss_oks'] : {loss_dict['loss_oks']} \
+        # \nloss_dict['loss_hm'] : {loss_dict['loss_hm']}")
 
         return loss_dict, (kpt_preds_list[-1], kpt_targets_list[-1],
                            area_targets_list[-1], kpt_weights_list[-1])

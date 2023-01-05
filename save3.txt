@@ -1,0 +1,335 @@
+2023-01-04 01:38:42,709 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.10.6 (main, Nov 14 2022, 16:10:14) [GCC 11.3.0]
+CUDA available: True
+GPU 0,1: Tesla P40
+CUDA_HOME: None
+GCC: x86_64-linux-gnu-gcc (Ubuntu 11.3.0-1ubuntu1~22.04) 11.3.0
+PyTorch: 1.11.0+cu102
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.5.2 (Git Hash a9302535553c73243c632ad3c4c80beec3d19a1e)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 10.2
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70
+  - CuDNN 7.6.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=10.2, CUDNN_VERSION=7.6.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.11.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.12.0+cu102
+OpenCV: 4.6.0
+MMCV: 1.7.0
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 10.2
+MMDetection: 2.26.0+e78d276
+------------------------------------------------------------
+
+2023-01-04 01:38:45,031 - mmdet - INFO - Distributed training: False
+2023-01-04 01:38:45,031 - mmdet - INFO - Set random seed to 1280972142, deterministic: False
+2023-01-04 01:38:45,494 - mmdet - INFO - initialize ResNet with init_cfg {'type': 'Pretrained', 'checkpoint': 'torchvision://resnet50'}
+2023-01-04 01:38:45,494 - mmcv - INFO - load model from: torchvision://resnet50
+2023-01-04 01:38:45,494 - mmcv - INFO - load checkpoint from torchvision path: torchvision://resnet50
+2023-01-04 01:38:45,604 - mmcv - WARNING - The model and loaded state dict do not match exactly
+
+unexpected key in source state_dict: fc.weight, fc.bias
+
+2023-01-04 01:38:45,624 - mmdet - INFO - initialize ChannelMapper with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+loading annotations into memory...
+Done (t=0.26s)
+creating index...
+index created!
+@@@@@@@@@@@@@@@ tools/train.py <main> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/apis/train.py <train_model> @@@@@@@@@@@@@@@
+2023-01-04 01:38:48,307 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+loading annotations into memory...
+Done (t=0.28s)
+creating index...
+index created!
+@@@@@@@@@@@@@@@ /usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py <run> @@@@@@@@@@@@@@@
+2023-01-04 01:38:48,810 - mmdet - INFO - Start running, host: root@1c6bbd9e7b30, work_dir: /root/petr_custom/work_dirs/petr_r50_16x2_100e_coco
+2023-01-04 01:38:48,810 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2023-01-04 01:38:48,810 - mmdet - INFO - workflow: [('train', 1)], max: 100 epochs
+2023-01-04 01:38:48,811 - mmdet - INFO - Checkpoints will be saved to /root/petr_custom/work_dirs/petr_r50_16x2_100e_coco by HardDiskBackend.
+@@@@@@@@@@@@@@@ /usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py <train> @@@@@@@@@@@@@@@
+
+========================= start one iter ( 1 / 1347 )=========================
+
+@@@@@@@@@@@@@@@ /usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py <run_iter> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <train_step> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/detectors/petr.py <forward_train> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <forward_train> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/dense_heads/petr_head.py <forward_train> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/dense_heads/petr_head.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/utils/transformer.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <_parse_losses> @@@@@@@@@@@@@@@
+
+========================= end one iter ( 1 / 1347 )=========================
+
+
+========================= start one iter ( 2 / 1347 )=========================
+
+@@@@@@@@@@@@@@@ /usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py <run_iter> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <train_step> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/detectors/petr.py <forward_train> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <forward_train> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/dense_heads/petr_head.py <forward_train> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/dense_heads/petr_head.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/utils/transformer.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <_parse_losses> @@@@@@@@@@@@@@@
+
+========================= end one iter ( 2 / 1347 )=========================
+
+
+========================= out =========================
+
+2023-01-04 01:38:53,674 - mmdet - INFO - Saving checkpoint at 1 epochs
+[                                                  ] 0/5000, elapsed: 0s, ETA:
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/dense_heads/petr_head.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/utils/transformer.py <forward> @@@@@@@@@@@@@@@
+
+[                                                  ] 1/5000, 3.3 task/s, elapsed: 0s, ETA:  1537s
+@@@@@@@@@@@@@@@ /root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/dense_heads/petr_head.py <forward> @@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@ /root/petr_custom/opera/models/utils/transformer.py <forward> @@@@@@@@@@@@@@@
+
+[                                                  ] 2/5000, 4.1 task/s, elapsed: 0s, ETA:  1213
+[                                                  ] 3/5000, 4.6 task/s, elapsed: 1s, ETA:  1090
+
+DONE (t=2.19s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *keypoints*
+DONE (t=11.23s).
+Accumulating evaluation results...
+DONE (t=0.53s).
+2023-01-04 01:53:02,241 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets= 20 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets= 20 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets= 20 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets= 20 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets= 20 ] = 0.008
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 20 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50      | area=   all | maxDets= 20 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.75      | area=   all | maxDets= 20 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets= 20 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets= 20 ] = 0.000
+
+2023-01-04 01:53:02,359 - mmdet - INFO - Epoch(val) [1][5000]	keypoints_mAP: 0.0000, keypoints_mAP_50: 0.0000, keypoints_mAP_75: 0.0000, keypoints_mAP_m: 0.0040, keypoints_mAP_l: 0.0080, keypoints_mAP_copypaste: 0.000 0.000 0.000 0.004 0.008
+
+========================= after one iter ( 2 / 1347 )=========================
+
+
+========================= epoch ( 0 )=========================
+
+
+========================= epoch ++ ( 1 )=========================
+
+@@@@@@@@@@@@@@@ /usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py <train> @@@@@@@@@@@@@@@
+
+========================= start one iter ( 1 / 1347 )=========================
+
+
+
+
+
+
+
+
+
+
+
+^CTraceback (most recent call last):
+  File "/root/petr_custom/tools/train.py", line 244, in <module>
+    main()
+  File "/root/petr_custom/tools/train.py", line 232, in main
+    train_model(
+  File "/root/petr_custom/opera/apis/train.py", line 246, in train_model
+    runner.run(data_loaders, cfg.workflow) # 여기서 모델 돌림 => "/mmcv/runner/epoch_based_runner.py"
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py", line 154, in run
+    epoch_runner(data_loaders[i], **kwargs) # => 현 파일의 train()
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py", line 71, in train
+    self.call_hook('after_train_epoch')
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/base_runner.py", line 317, in call_hook
+    getattr(hook, fn_name)(self)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/hooks/evaluation.py", line 271, in after_train_epoch
+    self._do_evaluate(runner)
+  File "/root/petr_custom/opera/core/evaluation/eval_hooks.py", line 60, in _do_evaluate
+    results = single_gpu_test(runner.model, self.dataloader, show=False)
+  File "/root/petr_custom/opera/apis/test.py", line 31, in single_gpu_test
+    result = model(return_loss=False, rescale=True, **data)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/parallel/data_parallel.py", line 51, in forward
+    return super().forward(*inputs, **kwargs)
+  
+^CTraceback (most recent call last):
+  File "/root/petr_custom/tools/train.py", line 244, in <module>
+    main()
+  File "/root/petr_custom/tools/train.py", line 232, in main
+    train_model(
+  File "/root/petr_custom/opera/apis/train.py", line 246, in train_model
+    runner.run(data_loaders, cfg.workflow) # 여기서 모델 돌림 => "/mmcv/runner/epoch_based_runner.py"
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py", line 152, in run
+    epoch_runner(data_loaders[i], **kwargs) # => 현 파일의 train()
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py", line 71, in train
+    self.call_hook('after_train_epoch')
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/base_runner.py", line 317, in call_hook
+    getattr(hook, fn_name)(self)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/hooks/evaluation.py", line 271, in after_train_epoch
+    self._do_evaluate(runner)
+  File "/root/petr_custom/opera/core/evaluation/eval_hooks.py", line 60, in _do_evaluate
+    results = single_gpu_test(runner.model, self.dataloader, show=False)
+  File "/root/petr_custom/opera/apis/test.py", line 34, in single_gpu_test
+    result = model(return_loss=False, rescale=True, **data)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/parallel/data_parallel.py", line 51, in forward
+    return super().forward(*inputs, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/parallel/data_parallel.py", line 166, in forward
+    return self.module(*inputs[0], **kwargs[0])
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/fp16_utils.py", line 119, in new_func
+    return old_func(*args, **kwargs)
+  File "/root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py", line 179, in forward
+    return self.forward_test(img, img_metas, **kwargs)
+  File "/root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py", line 150, in forward_test
+    return self.simple_test(imgs[0], img_metas[0], **kwargs)
+  File "/root/petr_custom/opera/models/detectors/petr.py", line 241, in simple_test
+    results_list = self.bbox_head.simple_test(
+  File "/root/petr_custom/third_party/mmdetection/mmdet/models/dense_heads/base_dense_head.py", line 360, in simple_test
+    return self.simple_test_bboxes(feats, img_metas, rescale=rescale)
+  File "/root/petr_custom/opera/models/dense_heads/petr_head.py", line 1115, in simple_test_bboxes
+    outs = self.forward(feats, img_metas)
+  File "/root/petr_custom/opera/models/dense_heads/petr_head.py", line 295, in forward
+    self.transformer(
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/petr_custom/opera/models/utils/transformer.py", line 888, in forward
+    memory = self.encoder(
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/petr_custom/third_party/mmdetection/mmdet/models/utils/transformer.py", line 479, in forward
+    x = super(DetrTransformerEncoder, self).forward(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/cnn/bricks/transformer.py", line 934, in forward
+    query = layer(
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/cnn/bricks/transformer.py", line 823, in forward
+    query = self.attentions[attn_index](
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/utils/misc.py", line 340, in new_func
+    output = old_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/ops/multi_scale_deform_attn.py", line 319, in forward
+    assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
+KeyboardInterrupt
+
+
+^CTraceback (most recent call last):
+  File "/root/petr_custom/tools/train.py", line 244, in <module>
+    main()
+  File "/root/petr_custom/tools/train.py", line 232, in main
+    train_model(
+in train_model
+    runner.run(data_loaders, cfg.workflow) # 여기서 모델 돌림 => "/mmcv/runner/epoch_based_runner.py"
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py", line 152, in run
+    epoch_runner(data_loaders[i], **kwargs) # => 현 파일의 train()
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/epoch_based_runner.py", line 71, in train
+    self.call_hook('after_train_epoch')
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/base_runner.py", line 317, in call_hook
+    getattr(hook, fn_name)(self)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/hooks/evaluation.py", line 271, in after_train_epoch
+    self._do_evaluate(runner)
+  File "/root/petr_custom/opera/core/evaluation/eval_hooks.py", line 60, in _do_evaluate
+    results = single_gpu_test(runner.model, self.dataloader, show=False)
+  File "/root/petr_custom/opera/apis/test.py", line 34, in single_gpu_test
+    result = model(return_loss=False, rescale=True, **data)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/parallel/data_parallel.py", line 51, in forward
+    return super().forward(*inputs, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/parallel/data_parallel.py", line 166, in forward
+    return self.module(*inputs[0], **kwargs[0])
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/mmcv/runner/fp16_utils.py", line 119, in new_func
+    return old_func(*args, **kwargs)
+  File "/root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py", line 179, in forward
+    return self.forward_test(img, img_metas, **kwargs)
+  File "/root/petr_custom/third_party/mmdetection/mmdet/models/detectors/base.py", line 150, in forward_test
+    return self.simple_test(imgs[0], img_metas[0], **kwargs)
+  File "/root/petr_custom/opera/models/detectors/petr.py", line 241, in simple_test
+    results_list = self.bbox_head.simple_test(
+  File "/root/petr_custom/third_party/mmdetection/mmdet/models/dense_heads/base_dense_head.py", line 360, in simple_test
+    return self.simple_test_bboxes(feats, img_metas, rescale=rescale)
+  File "/root/petr_custom/opera/models/dense_heads/petr_head.py", line 1115, in simple_test_bboxes
+    outs = self.forward(feats, img_metas)
+  File "/root/petr_custom/opera/models/dense_heads/petr_head.py", line 271, in forward
+    pos_encoding = self.positional_encoding(mlvl_masks[-1])
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/petr_custom/third_party/mmdetection/mmdet/models/utils/positional_encoding.py", line 84, in forward
+    dim_t = self.temperature**(2 * (dim_t // 2) / self.num_feats)
+  File "/usr/local/lib/python3.10/dist-packages/torch/_tensor.py", line 31, in wrapped
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/torch/_tensor.py", line 638, in __rpow__
+    return torch.tensor(other, dtype=dtype, device=self.device) ** self
+KeyboardInterrupt

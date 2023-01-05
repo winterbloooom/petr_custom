@@ -413,6 +413,8 @@ class MultiScaleDeformablePoseAttention(BaseModule):
             raise ValueError(
                 f'Last dim of reference_points must be'
                 f' 2K, but get {reference_points.shape[-1]} instead.')
+
+        # multi scale deformable attention 계층: /third_party/mmcv/mmcv/ops/multi_scale_deform_attn.py
         if torch.cuda.is_available():
             output = MultiScaleDeformableAttnFunction.apply(
                 value, spatial_shapes, level_start_index, sampling_locations,
@@ -1036,7 +1038,7 @@ class PETRTransformer(Transformer):
             **kwargs)
         # print(f"inter_states (shape: {inter_states.shape})")
         # (num_decoder_layers, topk, bs, embed_dims)
-        # inter_states (shape: torch.Size([3, 300, 2, 256]))
+        # inter_states (shape: torch.Size([3, 300, 2, 256])) 
         # print(f"inter_references (shape: {inter_references.shape})")
         # # (num_decoder_layers, bs, topk, 2*17)
         # inter_references (shape: torch.Size([3, 2, 300, 34]))
@@ -1056,6 +1058,8 @@ class PETRTransformer(Transformer):
                        img_inds,
                        kpt_branches=None,
                        **kwargs):
+        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+
         mask_flatten = []
         spatial_shapes = []
         for lvl, mask in enumerate(mlvl_masks):
@@ -1082,12 +1086,25 @@ class PETRTransformer(Transformer):
         query = query.unsqueeze(0).expand(pos_num, -1, -1)
         reference_points = reference_points_pose.reshape(
             pos_num,
-            reference_points_pose.size(1) // 2, 2)
-        query = query.permute(1, 0, 2)
-        query_pos = query_pos.permute(1, 0, 2)
-        pos_memory = memory[:, img_inds, :]
+            reference_points_pose.size(1) // 2, 2) 
+            # reference_points: torch.Size([3, 17, 2]) => (?, 17(joints), 2)
+        query = query.permute(1, 0, 2) 
+        #query: torch.Size([17, 3, 256]) => (17, ?, query_dim)
+        query_pos = query_pos.permute(1, 0, 2) 
+        # query_pos: torch.Size([17, 3, 256]) => (17, ?, query_dim)
+        pos_memory = memory[:, img_inds, :] 
+        #pos_memory: torch.Size([30734, 3, 256]) => (sum(hw), ?, query_dim)
         mask_flatten = mask_flatten[img_inds, :]
+        #mask_flatten: torch.Size([3, 30734]) => (?, sum(hw))
         valid_ratios = valid_ratios[img_inds, ...]
+
+        print("<refine_decoder's inputs>")
+        print(f"\tquery: {query.shape}")
+        print(f"\tquery_pos: {query_pos.shape}")
+        print(f"\tpos_memory: {pos_memory.shape}")
+        print(f"\tmask_flatten: {mask_flatten.shape}")
+        print(f"\treference_points: {reference_points.shape}")
+
         inter_states, inter_references = self.refine_decoder(
             query=query,
             key=None,
@@ -1102,5 +1119,15 @@ class PETRTransformer(Transformer):
             **kwargs)
         # [num_decoder, num_query, bs, embed_dim]
 
+        print("<refine_decoder's outputs & return>")
+        print(f"\tinter_states: {inter_states.shape}")
+        # torch.Size([2, 17, 3, 256]) => (2, 17, ?, query_dim)
+        print(f"\tinter_references: {inter_references.shape}")
+        # torch.Size([2, 3, 17, 2]) => (2, ?, 17, 2)
+
         init_reference_out = reference_points
+        
+        print(f"\tinit_reference_out(=reference_points): {init_reference_out.shape}")
+        #torch.Size([3, 17, 2]) => (?, 17, 2)
+
         return inter_states, init_reference_out, inter_references
