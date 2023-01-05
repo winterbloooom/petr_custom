@@ -53,7 +53,7 @@ class PETR(DETR):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
         # print(f"img: {img.shape}") #torch.Size([2, 3, 965, 976]) 식 -> 한 배치에 이미지 2개인 듯
         # print(f"img_metas: {img_metas[0]['ori_filename']}, {img_metas[1]['ori_filename']}")
@@ -471,7 +471,7 @@ class PETR(DETR):
             scores = bboxes[:, -1]
             inds = scores > score_thr
 
-            print(f"inds: {inds}") #TODO
+            # print(f"inds: {inds}") #TODO
             
             bboxes = bboxes[inds, :]
             labels = labels[inds]
@@ -480,8 +480,8 @@ class PETR(DETR):
             if keypoints is not None:
                 keypoints = keypoints[inds, ...]
 
-            print(f"bboxes over thre: \n{bboxes}")
-            print(f"keypoints over thre: \n{keypoints}")
+            # print(f"bboxes over thre: \n{bboxes}")
+            # print(f"keypoints over thre: \n{keypoints}")
 
         num_keypoint = keypoints.shape[1]
         if num_keypoint == 14:

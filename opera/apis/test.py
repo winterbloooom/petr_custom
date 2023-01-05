@@ -21,13 +21,15 @@ def single_gpu_test(model,
                     show=False,
                     out_dir=None,
                     show_score_thr=0.3):
-    print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+    # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
     model.eval()
     results = []
     dataset = data_loader.dataset
     PALETTE = getattr(dataset, 'PALETTE', None)
     prog_bar = mmcv.ProgressBar(len(dataset))
+
+    # print(f"data_loader size: {len(data_loader)}")
     
     for i, data in enumerate(data_loader): #5000개
         with torch.no_grad():
@@ -96,6 +98,9 @@ def single_gpu_test(model,
         for _ in range(batch_size): # batch_size=1
             prog_bar.update()
             print("")  # TODO 보기 편하게
+
+        # if i == 1:
+        #     break # TODO eval 5000개 다 돌지 않게
 
     # print(f"results.type: {type(results)}") #list
     # print(f"results.len: {len(results)}") # dataset size -> 5000개

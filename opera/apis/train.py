@@ -122,7 +122,7 @@ def train_model(model,
                 validate=False,
                 timestamp=None,
                 meta=None):
-    print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+    # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
     cfg = compat_cfg(cfg)
     logger = get_root_logger(log_level=cfg.log_level)
@@ -148,7 +148,7 @@ def train_model(model,
         **cfg.data.get('train_dataloader', {})
     }
 
-    data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
+    data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset] # [0] 1347개
 
     # put model on gpus
     if distributed:
@@ -224,7 +224,7 @@ def train_model(model,
                 cfg.data.val.pipeline)
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
 
-        val_dataloader = build_dataloader(val_dataset, **val_dataloader_args)
+        val_dataloader = build_dataloader(val_dataset, **val_dataloader_args) # 5000개
         eval_cfg = cfg.get('evaluation', {})
         eval_cfg['by_epoch'] = cfg.runner['type'] != 'IterBasedRunner'
         eval_hook = DistEvalHook if distributed else EvalHook
@@ -244,4 +244,3 @@ def train_model(model,
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
     runner.run(data_loaders, cfg.workflow) # 여기서 모델 돌림 => "/mmcv/runner/epoch_based_runner.py"
-    print("Done in epoch_base_runner.py -> Here is apis/train.py")

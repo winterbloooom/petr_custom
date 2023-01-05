@@ -798,7 +798,7 @@ class PETRTransformer(Transformer):
                     Only would be returned when `as_two_stage` is True, \
                     otherwise None.
         """
-        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
         assert self.as_two_stage or query_embed is not None
 
@@ -1058,7 +1058,7 @@ class PETRTransformer(Transformer):
                        img_inds,
                        kpt_branches=None,
                        **kwargs):
-        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
         mask_flatten = []
         spatial_shapes = []
@@ -1098,12 +1098,12 @@ class PETRTransformer(Transformer):
         #mask_flatten: torch.Size([3, 30734]) => (?, sum(hw))
         valid_ratios = valid_ratios[img_inds, ...]
 
-        print("<refine_decoder's inputs>")
-        print(f"\tquery: {query.shape}")
-        print(f"\tquery_pos: {query_pos.shape}")
-        print(f"\tpos_memory: {pos_memory.shape}")
-        print(f"\tmask_flatten: {mask_flatten.shape}")
-        print(f"\treference_points: {reference_points.shape}")
+        # print("<refine_decoder's inputs>")
+        # print(f"\tquery: {query.shape}")
+        # print(f"\tquery_pos: {query_pos.shape}")
+        # print(f"\tpos_memory: {pos_memory.shape}")
+        # print(f"\tmask_flatten: {mask_flatten.shape}")
+        # print(f"\treference_points: {reference_points.shape}")
 
         inter_states, inter_references = self.refine_decoder(
             query=query,
@@ -1119,15 +1119,15 @@ class PETRTransformer(Transformer):
             **kwargs)
         # [num_decoder, num_query, bs, embed_dim]
 
-        print("<refine_decoder's outputs & return>")
-        print(f"\tinter_states: {inter_states.shape}")
+        # print("<refine_decoder's outputs & return>")
+        # print(f"\tinter_states: {inter_states.shape}")
         # torch.Size([2, 17, 3, 256]) => (2, 17, ?, query_dim)
-        print(f"\tinter_references: {inter_references.shape}")
+        # print(f"\tinter_references: {inter_references.shape}")
         # torch.Size([2, 3, 17, 2]) => (2, ?, 17, 2)
 
         init_reference_out = reference_points
         
-        print(f"\tinit_reference_out(=reference_points): {init_reference_out.shape}")
+        # print(f"\tinit_reference_out(=reference_points): {init_reference_out.shape}")
         #torch.Size([3, 17, 2]) => (?, 17, 2)
 
         return inter_states, init_reference_out, inter_references

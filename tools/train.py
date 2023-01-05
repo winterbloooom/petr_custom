@@ -215,7 +215,7 @@ def main():
         test_cfg=cfg.get('test_cfg'))
     model.init_weights()
 
-    datasets = [build_dataset(cfg.data.train)]
+    datasets = [build_dataset(cfg.data.train)] # datasets[0]: 2693
     if len(cfg.workflow) == 2:
         val_dataset = copy.deepcopy(cfg.data.val)
         val_dataset.pipeline = cfg.data.train.pipeline
@@ -228,7 +228,7 @@ def main():
             CLASSES=datasets[0].CLASSES)
     # add an attribute for visualization convenience
     model.CLASSES = datasets[0].CLASSES
-    print("@@@@@@@@@@@@@@@ tools/train.py <main> @@@@@@@@@@@@@@@")
+
     train_model(
         model,
         datasets,
@@ -237,8 +237,6 @@ def main():
         validate=(not args.no_validate),
         timestamp=timestamp,
         meta=meta) # /opera/apis/train.py의 함수임
-    print("after train_model in tools/train.py")
-
 
 if __name__ == '__main__':
     main()

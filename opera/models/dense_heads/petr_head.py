@@ -238,7 +238,7 @@ class PETRHead(AnchorFreeHead):
                 as_two_stage is Ture it would be returned, otherwise
                 `None` would be returned.
         """
-        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
         batch_size = mlvl_feats[0].size(0) # TODO 왜 얘는 2로 고정이지?
         input_img_h, input_img_w = img_metas[0]['batch_input_shape'] # TODO 이 딕셔너리 요소가 있다고...?
@@ -368,13 +368,15 @@ class PETRHead(AnchorFreeHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
         kpt_preds, kpt_targets, area_targets, kpt_weights = refine_targets
         pos_inds = kpt_weights.sum(-1) > 0
-        print(f"len(pos_inds): {len(pos_inds)}")
+
+        # print(f"len(pos_inds): {len(pos_inds)}")
         # eval에서는 항상 10개 True로 고정
         # train시에는 600개이고 요소값이 True/False 매번 다름
+
         if pos_inds.sum() == 0:
             pos_kpt_preds = torch.zeros_like(kpt_preds[:1])
             pos_img_inds = kpt_preds.new_zeros([1], dtype=torch.int64)
@@ -382,7 +384,8 @@ class PETRHead(AnchorFreeHead):
             pos_kpt_preds = kpt_preds[pos_inds] # True인 것만 뽑음
             pos_img_inds = (pos_inds.nonzero() / self.num_query).squeeze(1).to(
                 torch.int64)
-        print(f"pos_img_inds(=transformer's forward_refine 'img_inds'): {pos_img_inds}") # TODO 뭐여>...???
+                
+        # print(f"pos_img_inds(=transformer's forward_refine 'img_inds'): {pos_img_inds}") # TODO 뭐여>...???
         #pos_img_inds(=transformer's forward_refine 'img_inds'): tensor([0, 1, 1, 1, 1], device='cuda:0') -> 요소는 0 또는 1이고 개수는 pos_inds에서 True의 개수
         # eval이라면 10개가 다 0
 
@@ -492,7 +495,7 @@ class PETRHead(AnchorFreeHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
         assert proposal_cfg is None, '"proposal_cfg" must be None'
         outs = self(x, img_metas) # 결과 도출. forward()로
@@ -561,7 +564,7 @@ class PETRHead(AnchorFreeHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
 
         assert gt_bboxes_ignore is None, \
             f'{self.__class__.__name__} only supports ' \
