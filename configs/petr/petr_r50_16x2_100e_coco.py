@@ -118,7 +118,7 @@ model = dict(
             cls_cost=dict(type='mmdet.FocalLossCost', weight=2.0),
             kpt_cost=dict(type='opera.KptL1Cost', weight=70.0),
             oks_cost=dict(type='opera.OksCost', weight=7.0))),
-    test_cfg=dict(max_per_img=10))  # TODO 잠시 20->10 바꿈 / set 'max_per_img=20' for time counting
+    test_cfg=dict(max_per_img=20))  # TODO 잠시 20->10 바꿈 / set 'max_per_img=20' for time counting
 # optimizer
 optimizer = dict(
     type='AdamW',
@@ -133,5 +133,5 @@ optimizer = dict(
 optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
 # learning policy
 lr_config = dict(policy='step', step=[80])
-runner = dict(type='EpochBasedRunner', max_epochs=1) # TODO 잠시 1로 바꿈
+runner = dict(type='EpochBasedRunner', max_epochs=100) # TODO 잠시 1로 바꿈
 checkpoint_config = dict(interval=1, max_keep_ckpts=20)

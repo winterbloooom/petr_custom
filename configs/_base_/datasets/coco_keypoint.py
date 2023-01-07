@@ -97,7 +97,7 @@ data = dict(
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/person_keypoints_val2017.json',
-        img_prefix=data_root + 'images/val2017/',
+        ann_file=data_root + 'annotations/person_keypoints_test-dev-2017.json',
+        img_prefix=data_root + 'images/test2017/',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='keypoints')
