@@ -15,6 +15,8 @@ from mmdet.datasets.api_wrappers import COCOeval
 from mmdet.datasets import CocoDataset
 from .builder import DATASETS
 
+import os, sys
+
 
 @DATASETS.register_module()
 class CocoPoseDataset(CocoDataset):
@@ -278,6 +280,10 @@ class CocoPoseDataset(CocoDataset):
                 metric_items = [metric_items]
 
         result_files, tmp_dir = self.format_results(results, jsonfile_prefix)
+        
+        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        json_str = self.results2json(results, jsonfile_prefix) # TODO
+        print(json_str) # TODO
 
         eval_results = OrderedDict()
         cocoGt = self.coco

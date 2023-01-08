@@ -92,7 +92,7 @@ def single_gpu_test(model,
                     bbox_results, mask_results = result[j]['ins_results']
                     result[j]['ins_results'] = (bbox_results,
                                                 encode_mask_results(mask_results))
-
+        # print(result) # TODO
         results.extend(result)
         
         for _ in range(batch_size): # batch_size=1
@@ -156,7 +156,7 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
                         bbox_results, mask_results = result[j]['ins_results']
                         result[j]['ins_results'] = (
                             bbox_results, encode_mask_results(mask_results))
-
+            print(result) # TODO
         results.extend(result)
 
         if rank == 0:
