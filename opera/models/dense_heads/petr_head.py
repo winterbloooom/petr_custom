@@ -238,10 +238,10 @@ class PETRHead(AnchorFreeHead):
                 as_two_stage is Ture it would be returned, otherwise
                 `None` would be returned.
         """
-        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
 
-        batch_size = mlvl_feats[0].size(0) # TODO 왜 얘는 2로 고정이지?
-        input_img_h, input_img_w = img_metas[0]['batch_input_shape'] # TODO 이 딕셔너리 요소가 있다고...?
+        batch_size = mlvl_feats[0].size(0) # coco_keypoint.py의 samples_per_gpu에서 배치 크기 설정.
+        input_img_h, input_img_w = img_metas[0]['batch_input_shape']
         # print(f"input_img_h: {input_img_h}, input_img_w: {input_img_w}") 
             #e.g) input_img_h: 1077, input_img_w: 1272
         img_masks = mlvl_feats[0].new_ones(
@@ -249,7 +249,7 @@ class PETRHead(AnchorFreeHead):
             # torch.Tensor.new_ones(): 입력한 크기만큼의 1을 만듦
         for img_id in range(batch_size):
             img_h, img_w, _ = img_metas[img_id]['img_shape']
-            # print(f"{img_id}번의 img_h: {img_h}, img_w: {img_w}") # TODO 뒤로갈수록 피처맵 크기가 큰지 작은지 확인!
+            # print(f"{img_id}번의 img_h: {img_h}, img_w: {img_w}")
             # e.g.) 0번의 img_h: 1077, img_w: 1272, 1번의 img_h: 636, img_w: 958
             img_masks[img_id, :img_h, :img_w] = 0
 
@@ -290,6 +290,7 @@ class PETRHead(AnchorFreeHead):
             #Embedding 모듈(default로 따지면 100 -> 256 * 2)의 가중치. 실제로는 [300, 512] 나오는 듯
         # print(f"query_embeds size: {query_embeds.shape}") # query_embeds size: torch.Size([300, 512])
         
+        print("\n************Go into Transformer************")
         hs, init_reference, inter_references, \
             enc_outputs_class, enc_outputs_kpt, hm_proto, memory = \
                 self.transformer(
@@ -343,8 +344,10 @@ class PETRHead(AnchorFreeHead):
 
         if hm_proto is not None: # TODO 여기도 보기
             # get heatmap prediction (training phase)
-            hm_memory, hm_mask = hm_proto
-            hm_pred = self.fc_hm(hm_memory)
+            hm_memory, hm_mask = hm_proto # heatmatp에서 뽑은 feature memory, 백본에서 얻은 P3 피처맵 크기의 마스크(all 0)
+            hm_pred = self.fc_hm(hm_memory) 
+            # reshape. embed_dim 크기의 채널로 되어 있던 것을 원래 이미지대로 변환.
+            # fc_hm은 Linear(self.embed_dims, self.num_keypoints) -> 근데 이 코드를 보면 이 부분이 키포인트 예측 같기도?
             hm_proto = (hm_pred.permute(0, 3, 1, 2), hm_mask)
 
         if self.as_two_stage:
@@ -368,14 +371,14 @@ class PETRHead(AnchorFreeHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
 
         kpt_preds, kpt_targets, area_targets, kpt_weights = refine_targets
         pos_inds = kpt_weights.sum(-1) > 0
 
-        # print(f"len(pos_inds): {len(pos_inds)}")
+        print(f"len(pos_inds) (True Person): {len(pos_inds)}")
         # eval에서는 항상 10개 True로 고정
-        # train시에는 600개이고 요소값이 True/False 매번 다름
+        # train시에는 배치*300개이고 요소값이 True/False 매번 다름
 
         if pos_inds.sum() == 0:
             pos_kpt_preds = torch.zeros_like(kpt_preds[:1])
@@ -411,7 +414,9 @@ class PETRHead(AnchorFreeHead):
             outputs_kpt = tmp_kpt.sigmoid()
             outputs_kpts.append(outputs_kpt)
         outputs_kpts = torch.stack(outputs_kpts)
-
+        print(f"outputs_kpts: {outputs_kpts.shape}") # (?, #person, #kpts, 2(x, y))
+        print(outputs_kpts)
+        
         if not self.training:
             return outputs_kpts
 
@@ -495,27 +500,35 @@ class PETRHead(AnchorFreeHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
 
         assert proposal_cfg is None, '"proposal_cfg" must be None'
         outs = self(x, img_metas) # 결과 도출. forward()로
         """
-        [0] outputs_classes, [1] outputs_kpts, [2] enc_outputs_class, [3] enc_outputs_kpt.sigmoid(), [4] hm_proto, [5] memory, [6] mlvl_masks
+        [0] outputs_classes, [1] outputs_kpts, [2] enc_outputs_class, [3] enc_outputs_kpt, [4] hm_proto,
+        [5] memory, [6] mlvl_masks
         """
         memory, mlvl_masks = outs[-2:]
         outs = outs[:-2] # [0] outputs_classes, [1] outputs_kpts, [2] enc_outputs_class, [3] enc_outputs_kpt, [4] hm_proto
         if gt_labels is None:
+            print(f"no GT labels")
             loss_inputs = outs + (gt_bboxes, gt_keypoints, gt_areas, img_metas)
         else:
             loss_inputs = outs + (gt_bboxes, gt_labels, gt_keypoints, gt_areas, img_metas)
         losses_and_targets = self.loss(*loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
         losses, refine_targets = losses_and_targets
-        # losses: dict
+        
+        # print("Losses after Pose Decoder\n")
+        # print('\n'.join(list(losses.keys())))
         # refine_targets(tuple): (kpt_preds_list[-1], kpt_targets_list[-1], area_targets_list[-1], kpt_weights_list[-1]) => 디코더 마지막 것들
 
         # get pose refinement loss
         losses = self.forward_refine(memory, mlvl_masks, refine_targets,
                                      losses, img_metas)
+        # print("Losses after Joint Decoder\n")
+        # print('\n'.join(list(losses.keys())))
+        # d0.loss_kpt_refine  d0.loss_oks_refine  d1.loss_kpt_refine  d1.loss_oks_refine 가 추가됨
+
         return losses
 
     @force_fp32(apply_to=('all_cls_scores', 'all_kpt_preds'))
@@ -564,7 +577,7 @@ class PETRHead(AnchorFreeHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
 
         assert gt_bboxes_ignore is None, \
             f'{self.__class__.__name__} only supports ' \
@@ -582,8 +595,8 @@ class PETRHead(AnchorFreeHead):
                 all_gt_labels_list, all_gt_keypoints_list,
                 all_gt_areas_list, img_metas_list)
 
-        # print(f"\tlosses_cls: {losses_cls[0].shape}\n\tlosses_kpt: {losses_kpt[0].shape}, \n\tlosses_oks: {losses_oks[0].shape}\
-        #  \n\tkpt_preds_list:{kpt_preds_list[0].shape} \n\tkpt_targets_list: {kpt_targets_list[0].shape}, \n\tarea_targets_list: {area_targets_list[0].shape}\n\tkpt_weights_list: {kpt_weights_list[0].shape}")
+        # print(f"kpt_preds_list: length ({len(kpt_preds_list)}) [0] ({kpt_preds_list[0].shape})") # 디코더 레이어 수만큼 나옴. 하나당 [배치*300, 17*2]
+        # print(f"kpt_targets_list: length ({len(kpt_targets_list)}) [0] ({kpt_targets_list[0].shape})") # 디코더 레이어 수만큼 나옴.
         """
         losses_cls[0] : torch.Size([1])
         losses_kpt[0] : torch.Size([]), 
@@ -603,7 +616,10 @@ class PETRHead(AnchorFreeHead):
         """
 
         loss_dict = dict()
+
         # loss of proposal generated from encode feature map.
+        # print(enc_cls_scores.shape) # [bs, sum(hw), 1]
+        # print(enc_kpt_preds.shape) # [bs, sum(hw), 17*2]
         if enc_cls_scores is not None:
             binary_labels_list = [
                 torch.zeros_like(gt_labels_list[i])
@@ -1165,6 +1181,8 @@ class PETRHead(AnchorFreeHead):
                 (n, K, 3), in [p^{1}_x, p^{1}_y, p^{1}_v, p^{K}_x, p^{K}_y,
                 p^{K}_v] format.
         """
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
+
         # forward of this head requires img_metas
         outs = self.forward(feats, img_metas)
         results_list = self.get_bboxes(*outs, img_metas, rescale=rescale)

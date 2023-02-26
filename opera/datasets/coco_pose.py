@@ -281,9 +281,7 @@ class CocoPoseDataset(CocoDataset):
 
         result_files, tmp_dir = self.format_results(results, jsonfile_prefix)
         
-        print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
-        json_str = self.results2json(results, jsonfile_prefix) # TODO
-        print(json_str) # TODO
+        json_str = self.results2json(results, "swin") # TODO json keypoint coord output for evaluation server
 
         eval_results = OrderedDict()
         cocoGt = self.coco

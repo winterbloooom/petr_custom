@@ -1,4 +1,6 @@
 # Copyright (c) Hikvision Research Institute. All rights reserved.
+
+import os, sys
 import mmcv
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +15,7 @@ from mmdet.models.detectors.detr import DETR
 from opera.core.keypoint import bbox_kpt2result, kpt_mapping_back
 from ..builder import DETECTORS
 
-import os, sys
+import matplotlib.pyplot as plt
 
 @DETECTORS.register_module()
 class PETR(DETR):
@@ -53,25 +55,19 @@ class PETR(DETR):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
 
-        # print(f"img: {img.shape}") #torch.Size([2, 3, 965, 976]) 식 -> 한 배치에 이미지 2개인 듯
-        # print(f"img_metas: {img_metas[0]['ori_filename']}, {img_metas[1]['ori_filename']}")
+        print(f"img: {img.shape}") #torch.Size([2, 3, 965, 976]) 식 -> 한 배치에 이미지 2개인 듯
+        print(f"img_metas: {img_metas[0]['ori_filename']}")
         """
         [{'filename': './dataset/public/coco/images/train2017/000000239845.jpg', 'ori_filename': '000000239845.jpg', 
         'ori_shape': (480, 640, 3), 'img_shape': (496, 429, 3), 'pad_shape': (496, 429, 3), 
         'scale_factor': array([0.8330097 , 0.83361346, 0.8330097 , 0.83361346], dtype=float32), 
         'flip': False, 'flip_direction': None, 
         'img_norm_cfg': {'mean': array([123.675, 116.28 , 103.53 ], dtype=float32), 'std': array([58.395, 57.12 , 57.375], dtype=float32), 
-        'to_rgb': True}}, 
-        
-        {'filename': './dataset/public/coco/images/train2017/000000118895.jpg', 'ori_filename': '000000118895.jpg', 
-        'ori_shape': (427, 640, 3), 'img_shape': (965, 976, 3), 'pad_shape': (965, 976, 3), 
-        'scale_factor': array([2.243678 , 2.2441862, 2.243678 , 2.2441862], dtype=float32), 
-        'flip': True, 'flip_direction': 'horizontal', 
-        'img_norm_cfg': {'mean': array([123.675, 116.28 , 103.53 ], dtype=float32), 'std': array([58.395, 57.12 , 57.375], dtype=float32), 
-        'to_rgb': True}}]
+        'to_rgb': True}}
         """
+
         # print(f"gt_bboxes: {type(gt_bboxes)} / {gt_bboxes}")
         """
         list
@@ -81,12 +77,14 @@ class PETR(DETR):
         [ 68.2744, 342.0081, 132.1774, 441.8358],
         [478.2634, 195.0032, 532.8507, 317.1267]])]
         """
+
         # print(f"gt_labels: {type(gt_labels)} / {gt_labels}")
         """
         list
         [tensor([0]), 
         tensor([0, 0, 0])]
         """
+        
         # print(f"gt_keypoints: {type(gt_keypoints)} / {gt_keypoints}")
         """
         list
@@ -99,39 +97,16 @@ class PETR(DETR):
            0.0000,   0.0000,   0.0000,   0.0000,   0.0000,   0.0000,   0.0000,
            0.0000,   0.0000,   0.0000,   0.0000,   0.0000,   0.0000,   0.0000,
            0.0000,   0.0000,   0.0000,   0.0000,   0.0000,   0.0000,   0.0000,
-           0.0000,   0.0000]]), 
-           
-           tensor([[410.8066, 222.6606,   2.0000, 410.8351, 217.9274,   2.0000,   0.0000,
-           0.0000,   0.0000, 417.9461, 215.6036,   2.0000,   0.0000,   0.0000,
-           0.0000, 432.0326, 233.4390,   2.0000, 448.6344, 226.4391,   2.0000,
-         425.8616, 276.0025,   2.0000,   0.0000,   0.0000,   0.0000, 406.7798,
-         301.9211,   2.0000,   0.0000,   0.0000,   0.0000, 469.5178, 294.0164,
-           2.0000, 484.9369, 287.0094,   2.0000, 424.3932, 323.3278,   2.0000,
-         464.5439, 334.2204,   2.0000, 464.3868, 360.2533,   2.0000, 473.6492,
-         393.4432,   1.0000],
-        [ 75.2415, 359.0868,   2.0000,  76.4457, 355.5440,   2.0000,   0.0000,
-           0.0000,   0.0000,  83.5567, 353.2202,   2.0000,   0.0000,   0.0000,
-           0.0000,  95.3204, 363.9415,   2.0000,  82.2954, 366.2296,   2.0000,
-         107.0697, 377.0294,   2.0000,  86.9195, 384.0078,   2.0000, 115.2565,
-         392.4624,   2.0000,  86.8481, 395.8409,   2.0000, 106.9769, 392.4124,
-           2.0000,  98.6688, 397.0956,   2.0000, 108.0169, 416.0858,   2.0000,
-         111.5867, 412.5573,   2.0000, 125.6803, 429.2093,   2.0000, 123.2933,
-         432.7450,   2.0000],
-        [496.0746, 205.4252,   2.0000, 496.0889, 203.0585,   2.0000, 492.5334,
-         204.2204,   2.0000,   0.0000,   0.0000,   0.0000, 485.4152, 207.7275,
-           2.0000, 503.1285, 212.5679,   2.0000, 482.9568, 223.0963,   2.0000,
-         510.0825, 236.2770,   1.0000, 487.5523, 245.6078,   1.0000, 515.9393,
-         245.7792,   2.0000, 496.9147, 262.2313,   2.0000, 513.4952, 258.7813,
-           2.0000, 504.0114, 262.2741,   2.0000, 515.6895, 287.1951,   2.0000,
-         514.5067, 287.1880,   2.0000, 504.8944, 311.9803,   2.0000, 528.5145,
-         318.0398,   1.0000]])]
+           0.0000,   0.0000]])]
         """
+
         # print(f"gt_areas: {type(gt_areas)} / {gt_areas}")
         """
         list
         [tensor([2139973.2500]), 
         tensor([9943.8857, 2317.5857, 2607.1943])]
         """
+
         # print(f"gt_bboxes_ignore: {type(gt_bboxes_ignore)} / {gt_bboxes_ignore}")
         """
         NoneType
@@ -139,61 +114,51 @@ class PETR(DETR):
         """
 
         super(SingleStageDetector, self).forward_train(img, img_metas)
-        x = self.extract_feat(img) # from backbone / 이미지 사이즈가 크면 간혹 여기서 죽기도 함
-        # 아래 결과는 모두 img: torch.Size([2, 3, 909, 1028])일 때
+        x_backbone, x = self.extract_feat(img)  # TODO Temp
+        # from backbone. File: third_party/mmdetection/mmdet/models/detectors/single_stage.py
+        # x_backbone == before embedding dim
 
-        # print("************Feature Extracted!************") # 실행됨
-        # print(f"type(x): {type(x)}") # tuple
-        # print(f"len(x): {len(x)}") #4 -> 각각이 level
-
-        # print(f"type(x[0]): {type(x[0])}") # torch.Tensor
-        # print(f"len(x[0]): {len(x[0])}") # 2
-        # print(f"shape(x[0]): {x[0].shape}") # torch.Size([2, 256, 114, 129]) -> 해상도 1/8
-
-        # print(f"type(x[1]): {type(x[1])}") # torch.Tensor
-        # print(f"len(x[1]): {len(x[1])}") # 2
-        # print(f"shape(x[1]): {x[1].shape}") # torch.Size([2, 256, 57, 65]) -> 해상도 1/16
+        print("\n************Feature Extracted!************")
+        print(f"x shape: \n\t{x[0].shape}, \n\t{x[1].shape}, \n\t{x[2].shape}, \n\t{x[3].shape}")
         
-        # print(f"type(x[2]): {type(x[2])}") # torch.Tensor
-        # print(f"len(x[2]): {len(x[2])}") # 2
-        # print(f"shape(x[2]): {x[2].shape}") # torch.Size([2, 256, 29, 33]) -> 해상도 1/32
-
-        # print(f"type(x[3]): {type(x[3])}") # torch.Tensor
-        # print(f"len(x[3]): {len(x[3])}") # 2
-        # print(f"shape(x[3]): {x[3].shape}") # torch.Size([2, 256, 15, 17]) -> 해상도 1/60 (64)
-
-        # print(f"len(x[0][0]): {len(x[0][0])}") # 256 -> demension
-        # print(f"len(x[0][1]): {len(x[0][1])}") # 256 -> demension
-        # print(f"len(x[0][0]): {len(x[1][0])}") # 256 -> demension
-        # print(f"len(x[0][0]): {len(x[2][0])}") # 256 -> demension
-        # print(f"len(x[0][0]): {len(x[3][0])}") # 256 -> demension
+        # TODO: visualize feature maps
+        # feature_maps = []
+        # for feature_map in x_backbone:
+        #     feature_map = feature_map.squeeze(0)
+        #     gray_scale = torch.sum(feature_map, 0) / feature_map.shape[0]
+        #     feature_maps.append(gray_scale.data.cpu().numpy()) # [H, W] for each feature map
         
-        # import sys
-        # sys.exit(0)
+        # for i in range(len(feature_maps)):
+        #     plt.imshow(feature_maps[i])
+        #     plt.savefig(f'lv{i}_backbone.png')
 
+        print("\n************Start Head************")
         losses = self.bbox_head.forward_train(x, img_metas, gt_bboxes,
                                               gt_labels, gt_keypoints,
                                               gt_areas, gt_bboxes_ignore)
             # bbox_head는 petr_head.py => losses의 type: dict
+        print("\n************End Head / return losses************")
+        
+        for loss_name, loss in losses.items():
+            print(f"{loss_name} : {loss}")
         """
-        {'enc_loss_cls': tensor([2.2451], device='cuda:0', grad_fn=<MulBackward0>), 
-        'enc_loss_kpt': tensor(7.9735, device='cuda:0', grad_fn=<MulBackward0>), 
-        'loss_cls': tensor([1.8840], device='cuda:0', grad_fn=<MulBackward0>), 
-        'loss_kpt': tensor(8.4770, device='cuda:0', grad_fn=<MulBackward0>), 
-        'loss_oks': tensor(4.8181, device='cuda:0', grad_fn=<MulBackward0>), 
-        'd0.loss_cls': tensor([2.3254], device='cuda:0', grad_fn=<MulBackward0>), 
-        'd0.loss_kpt': tensor(8.4770, device='cuda:0', grad_fn=<MulBackward0>), 
-        'd0.loss_oks': tensor(4.8181, device='cuda:0', grad_fn=<MulBackward0>), 
-        'd1.loss_cls': tensor([2.1434], device='cuda:0', grad_fn=<MulBackward0>), 
-        'd1.loss_kpt': tensor(8.4770, device='cuda:0', grad_fn=<MulBackward0>), 
-        'd1.loss_oks': tensor(4.8181, device='cuda:0', grad_fn=<MulBackward0>), 
-        'loss_hm': tensor(152.6593, device='cuda:0', grad_fn=<MulBackward0>), 
-        'd0.loss_kpt_refine': tensor(9.6879, device='cuda:0', grad_fn=<MulBackward0>), 
-        'd0.loss_oks_refine': tensor(7.2271, device='cuda:0', grad_fn=<MulBackward0>), 
-        'd1.loss_kpt_refine': tensor(9.6879, device='cuda:0', grad_fn=<MulBackward0>), 
-        'd1.loss_oks_refine': tensor(7.2271, device='cuda:0', grad_fn=<MulBackward0>)}
+        enc_loss_cls : tensor([2.2243], device='cuda:0', grad_fn=<MulBackward0>)
+        enc_loss_kpt : 10.175610542297363
+        loss_cls : tensor([1.7513], device='cuda:0', grad_fn=<MulBackward0>)
+        loss_kpt : 11.335064888000488
+        loss_oks : 4.271188735961914
+        d0.loss_cls : tensor([2.2479], device='cuda:0', grad_fn=<MulBackward0>)
+        d0.loss_kpt : 11.335064888000488
+        d0.loss_oks : 4.271188735961914
+        d1.loss_cls : tensor([1.9321], device='cuda:0', grad_fn=<MulBackward0>)
+        d1.loss_kpt : 11.335064888000488
+        d1.loss_oks : 4.271188735961914
+        loss_hm : 101.3071060180664
+        d0.loss_kpt_refine : 12.954360008239746
+        d0.loss_oks_refine : 6.406783103942871
+        d1.loss_kpt_refine : 12.954360008239746
+        d1.loss_oks_refine : 6.406783103942871
         """
-        # print(f"losses: {losses.shape} / {losses}") # TODO 잠시 멈춤. dict 요소에는 shape 속성 없어 에러 나서.
         
         return losses
 
@@ -233,19 +198,49 @@ class PETR(DETR):
                 and classes. The outer list corresponds to each image.
                 The inner list corresponds to each class.
         """
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
+        
         batch_size = len(img_metas)
         assert batch_size == 1, 'Currently only batch_size 1 for inference ' \
             f'mode is supported. Found batch_size {batch_size}.'
         
-        feat = self.extract_feat(img)
+        print(f"img: {img.shape}")
+        print(f"img_metas: {img_metas[0]['ori_filename']}")
+
+        x_backbone, feat = self.extract_feat(img)  # TODO Temp
+        print("\n************Feature Extracted!************")
+        print(f"feat shape: {feat[0].shape}, {feat[1].shape}, {feat[2].shape}, {feat[3].shape}")
+        
+        # TODO: visualize feature maps
+        feature_maps = []
+        for feature_map in x_backbone:
+            feature_map = feature_map.squeeze(0)
+            gray_scale = torch.sum(feature_map, 0) / feature_map.shape[0]
+            feature_maps.append(gray_scale.data.cpu().numpy()) # [H, W] for each feature map
+        
+        for i in range(len(feature_maps)):
+            plt.imshow(feature_maps[i])
+            plt.savefig(f'lv{i}_backbone.png')
+        
+        print("\n************Start Head************")
         results_list = self.bbox_head.simple_test(
             feat, img_metas, rescale=rescale)
+        print("\n************End Head************")
+
+        # print(len(results_list[0][2])) # 20  (300개 중 true라고 한 개수) // config 파일에서 max_per_img
 
         bbox_kpt_results = [
             bbox_kpt2result(det_bboxes, det_labels, det_kpts,
                             self.bbox_head.num_classes)
             for det_bboxes, det_labels, det_kpts in results_list
         ]
+
+        # print(len(bbox_kpt_results), type(bbox_kpt_results))
+        # len(bbox_kpt_results[0][0][0]) == 20 (300개 중 true라고 한 개수)
+        # len(bbox_kpt_results[0][0][0][0]) 박스 하나 -> 이 안에 5개 들었음(w, h, cx, cy)
+        # print(len(bbox_kpt_results[0][0][1])) # out of index
+        
+        sys.exit()
         return bbox_kpt_results
 
     def merge_aug_results(self, aug_bboxes, aug_kpts, aug_scores, img_metas):

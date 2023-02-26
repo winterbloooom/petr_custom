@@ -363,11 +363,19 @@ class MultiScaleDeformablePoseAttention(BaseModule):
         Returns:
             Tensor: forwarded results with shape [num_query, bs, embed_dims].
         """
+        import os, sys
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
+
+        print(f"query (num_query, bs, embed_dims): {query.shape}")
 
         if key is None:
-            key = query
+            key = query # here!!
         if value is None:
-            value = key
+            value = key # not!!
+
+        print(f"key (num_key, bs, embed_dims): {key.shape}")
+        print(f"value (num_key, bs, embed_dims): {value.shape}")
+        print(f"reference_points (bs, num_query, num_levels, 17*2): {reference_points.shape}")
 
         if residual is None:
             inp_residual = query
@@ -396,6 +404,7 @@ class MultiScaleDeformablePoseAttention(BaseModule):
                                                    self.num_heads,
                                                    self.num_levels,
                                                    self.num_points)
+
         if reference_points.shape[-1] == self.num_points * 2:
             reference_points_reshape = reference_points.reshape(
                 bs, num_query, self.num_levels, -1, 2).unsqueeze(2)
@@ -414,6 +423,11 @@ class MultiScaleDeformablePoseAttention(BaseModule):
                 f'Last dim of reference_points must be'
                 f' 2K, but get {reference_points.shape[-1]} instead.')
 
+        print(f"sampling_offsets (bs, #query, #heads, #levels, #kpts, 2): {sampling_offsets.shape}")
+        print(f"value (bs, #value, #heads, -1): {value.shape}")
+        print(f"sampling_locations (bs, #query, #heads, #levels, #kpts, 2): {sampling_locations.shape}")
+        print(f"attention_weights  (bs, #query, #heads, #levels, #kpts): {attention_weights.shape}")
+
         # multi scale deformable attention 계층: /third_party/mmcv/mmcv/ops/multi_scale_deform_attn.py
         if torch.cuda.is_available():
             output = MultiScaleDeformableAttnFunction.apply(
@@ -423,8 +437,11 @@ class MultiScaleDeformablePoseAttention(BaseModule):
             output = multi_scale_deformable_attn_pytorch(
                 value, spatial_shapes, sampling_locations,
                 attention_weights)
+
         output = self.output_proj(output).permute(1, 0, 2)
         # (num_query, bs ,embed_dims)
+        print(f"output: {output.shape}")
+
         return self.dropout(output) + inp_residual
 
 
@@ -500,7 +517,7 @@ class PetrTransformerDecoder(TransformerLayerSequence):
                     new_reference_points = new_reference_points.sigmoid()
                 else:
                     raise NotImplementedError
-                reference_points = new_reference_points.detach()
+                reference_points = new_reference_points.detach() # 이전 레이어의 output을 가공해 다음 레이어의 ref points로 삼음
 
             output = output.permute(1, 0, 2)
             if self.return_intermediate:
@@ -763,7 +780,7 @@ class PETRTransformer(Transformer):
                 Each element has shape [bs, embed_dims, h, w].
             mlvl_masks (list(Tensor)): The key_padding_mask from different
                 level used for encoder and decoder, each element has shape
-                [bs, h, w].
+                [bs, h, w]. => 각 레벨의 피처맵 크기만큼의 0으로 채워진 tensor. transformer의 masking 작업으로 각 레벨을 구분하려고.
             query_embed (Tensor): The query embedding for decoder,
                 with shape [num_query, c].
             mlvl_pos_embeds (list(Tensor)): The positional encoding
@@ -798,10 +815,15 @@ class PETRTransformer(Transformer):
                     Only would be returned when `as_two_stage` is True, \
                     otherwise None.
         """
-        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
 
         assert self.as_two_stage or query_embed is not None
 
+        # print(torch.count_nonzero(mlvl_masks[0]), torch.count_nonzero(mlvl_masks[1]), \
+        # torch.count_nonzero(mlvl_masks[2]), torch.count_nonzero(mlvl_masks[3]))
+        # all 0
+
+        print("\n************Flatten Feature maps************")
         feat_flatten = []
         mask_flatten = []
         lvl_pos_embed_flatten = []
@@ -837,56 +859,38 @@ class PETRTransformer(Transformer):
             # ex) [[114, 129], [57, 65], [29, 33], [15, 17]] => (num_levels, 2) => 각 피처맵의 사이즈
         # print(f"spatial_shapes (shape: {spatial_shapes.shape}) =====\n{spatial_shapes}")
         # spatial_shapes (shape: torch.Size([4, 2]))
-        """
-        tensor([[135, 159],
-                [ 68,  80],
-                [ 34,  40],
-                [ 17,  20]], device='cuda:0')
-        """
 
         level_start_index = torch.cat((spatial_shapes.new_zeros(
             (1, )), spatial_shapes.prod(1).cumsum(0)[:-1]))
             # torch.Size([4])
             # ex) tensor([    0, 21465, 26905, 28265], device='cuda:0') => feat_flatten에서 각 피처맵이 어디서부터 시작하는지
-        # print(f"level_start_index (shape: {level_start_index.shape}) =====\n{level_start_index}")
-        """ level_start_index (shape: torch.Size([4])) =====
-            tensor([    0, 15000, 18750, 19700])"""
+        print(f"level_start_index (shape: {level_start_index.shape}) {level_start_index}")
+        """ level_start_index (shape: torch.Size([4])) tensor([    0, 15000, 18750, 19700])"""
 
         valid_ratios = torch.stack(
             [self.get_valid_ratio(m) for m in mlvl_masks], 1)
             # (bs, num_levels, 2)
             # The ratios of valid points on the feature map
         # print(f"valid_ratios (shape: {valid_ratios.shape}) =====\n{valid_ratios}")
-        """
-        valid_ratios (shape: torch.Size([2, 4, 2])) =====
-        tensor([[[1.0000, 1.0000],
-                [1.0000, 1.0000],
-                [1.0000, 1.0000],
-                [1.0000, 1.0000]],
-
-                [[0.7547, 0.5926],
-                [0.7625, 0.6029],
-                [0.7750, 0.6176],
-                [0.8000, 0.6471]]], device='cuda:0')
-        """
 
         reference_points = \
             self.get_reference_points(spatial_shapes,
                                       valid_ratios,
                                       device=feat.device)
             #torch.Size([bs, sum(HW), num_levels, 2])
-        # print(f"reference_points (shape: {reference_points.shape})")
+        print(f"reference_points (bs, #query(=sum(HW)), #levels, 2): {reference_points.shape}")
         # reference_points (shape: torch.Size([2, 28605, 4, 2]))
 
         feat_flatten = feat_flatten.permute(1, 0, 2)  # (sum(hw), bs, embed_dims)
-        # print(f"feat_flatten (shape: {feat_flatten.shape})")
+        print(f"feat_flatten (& query of encoder) (#query(=sum(HW)), bs, embed_dims): {feat_flatten.shape}")
         # feat_flatten (shape: torch.Size([28605, 2, 256]))
 
         lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
             1, 0, 2)  # (sum(hw), bs, embed_dims)
-        # print(f"lvl_pos_embed_flatten (shape: {lvl_pos_embed_flatten.shape})")
+        print(f"lvl_pos_embed_flatten (& query_pos of encoder) : {lvl_pos_embed_flatten.shape}")
         # lvl_pos_embed_flatten (shape: torch.Size([28605, 2, 256]))
 
+        print("\n************Start Encoder************")
         memory = self.encoder(
             query=feat_flatten,
             key=None,
@@ -898,16 +902,18 @@ class PETRTransformer(Transformer):
             level_start_index=level_start_index,
             valid_ratios=valid_ratios,
             **kwargs)
-
+        
         memory = memory.permute(1, 0, 2)
-        # print(f"memory(result of encoder) (shape: {memory.shape})")
+        print(f"\nmemory(result of encoder) (bs, #key(=sum(HW)), embed_dims): {memory.shape}")
         # memory(result of encoder) (shape: torch.Size([2, 28605, 256]))
         bs, _, c = memory.shape
             # (bs, num_key, embed_dim). 
             # "num_key" = number of points on feature map from all level
+        print("************End Encoder************\n")
 
         hm_proto = None
         if self.training:
+            print("\n************Start Heatmap Encoder************")
             hm_memory = memory[
                 :, level_start_index[0]:level_start_index[1], :]
             hm_pos_embed = lvl_pos_embed_flatten[
@@ -931,6 +937,9 @@ class PETRTransformer(Transformer):
             hm_memory = hm_memory.permute(1, 0, 2).reshape(bs,
                 spatial_shapes[0, 0], spatial_shapes[0, 1], -1)
             hm_proto = (hm_memory, mlvl_masks[0])
+            print(f"\nheatmap memory(result of heatmap encoder) shape: {hm_memory.shape}")
+            # print(f"heatmap proto shape: {hm_proto.shape}")
+            print("************End Heatmap Encoder************\n")
 
         if self.as_two_stage:
             output_memory, output_proposals = \
@@ -940,23 +949,23 @@ class PETRTransformer(Transformer):
                 #   디코더의 입력으로 쓸 피처맵
                 # output_proposals (Tensor) => (bs, num_keys, 2)
                 #   역시그모이드 거쳐 정규화한 bbox proposal
-            # print(f"output_memory (shape: {output_memory.shape})")
+            print(f"output_memory (bs, #key, embed_dims): {output_memory.shape}")
             # output_memory (shape: torch.Size([2, 28605, 256]))
-            # print(f"output_proposals (shape: {output_proposals.shape})")
+            print(f"output_proposals (bs, #key, 2): {output_proposals.shape}")
             # output_proposals (shape: torch.Size([2, 28605, 2]))
 
             enc_outputs_class = cls_branches[self.decoder.num_layers](
                 output_memory)
                 # petr_head.py에서 확인! cls_branches: fc_cls라는 Linear 모듈(embed_dims, cls_out_channels(=1))이 num_pred(=디코더 레이어 수 + 1) 만큼 있음
                 # (bs, num_key(=전체 레벨 포인트 개수), cls_out_channels(=1))
-            # print(f"enc_outputs_class (shape: {enc_outputs_class.shape})")
+            print(f"enc_outputs_class (bs, #key, 1): {enc_outputs_class.shape}")
             # enc_outputs_class (shape: torch.Size([2, 28605, 1]))
 
             enc_outputs_kpt_unact = \
                 kpt_branches[self.decoder.num_layers](output_memory)
                 # petr_head.py에서 확인! kpt_branches: kpt_branches라는 Sequential 모듈(embed_dims=>2*num_keypoints(=2*17))이 num_pred(=디코더 레이어 수 + 1) 만큼 있음
                 # (bs, num_key(=전체 레벨 포인트 개수), 2*num_keypoints(=2*17))
-            # print(f"enc_outputs_kpt_unact (shape: {enc_outputs_kpt_unact.shape})")
+            print(f"enc_outputs_kpt_unact (bs, #key, 17*2): {enc_outputs_kpt_unact.shape}")
             # enc_outputs_kpt_unact (shape: torch.Size([2, 28605, 34]))
 
             enc_outputs_kpt_unact[..., 0::2] += output_proposals[..., 0:1] # TODO shape: (bs, num_keys, 1) -> x좌표
@@ -1010,8 +1019,7 @@ class PETRTransformer(Transformer):
 
         # decoder
         query = query.permute(1, 0, 2)
-        # print(f"query (shape: {query.shape})")
-        # (topk, bs, dim)
+        print(f"query (of decoder) (topk, bs, embed_dims): {query.shape}")
         # query (shape: torch.Size([300, 2, 256]))
 
         memory = memory.permute(1, 0, 2)
@@ -1020,10 +1028,10 @@ class PETRTransformer(Transformer):
         # (shape: torch.Size([28605, 2, 256]))
         
         query_pos = query_pos.permute(1, 0, 2)
-        # print(f"query_pos (shape: {query_pos.shape})")
-        # (topk, bs, dim)
+        print(f"query_pos (topk, bs, dim): {query_pos.shape}")
         # query_pos (shape: torch.Size([300, 2, 256]))
 
+        print("\n************Start Pose Decoder************")
         inter_states, inter_references = self.decoder(
             query=query,
             key=None,
@@ -1036,12 +1044,11 @@ class PETRTransformer(Transformer):
             valid_ratios=valid_ratios,
             kpt_branches=kpt_branches,
             **kwargs)
-        # print(f"inter_states (shape: {inter_states.shape})")
-        # (num_decoder_layers, topk, bs, embed_dims)
+        print(f"\ninter_states (#decoder_layers, topk, bs, embed_dims): {inter_states.shape}")
         # inter_states (shape: torch.Size([3, 300, 2, 256])) 
-        # print(f"inter_references (shape: {inter_references.shape})")
-        # # (num_decoder_layers, bs, topk, 2*17)
+        print(f"inter_references (#decoder_layers, bs, topk, 2*17): {inter_references.shape}")
         # inter_references (shape: torch.Size([3, 2, 300, 34]))
+        print("************End Pose Decoder************\n")
 
         inter_references_out = inter_references
         if self.as_two_stage:
@@ -1058,7 +1065,7 @@ class PETRTransformer(Transformer):
                        img_inds,
                        kpt_branches=None,
                        **kwargs):
-        # print(f"@@@@@@@@@@@@@@@ {os.path.abspath(__file__)} <{sys._getframe(0).f_code.co_name}> @@@@@@@@@@@@@@@")
+        print(f"\n@@@ {os.path.abspath(__file__)} [{self.__class__.__name__}] <{sys._getframe(0).f_code.co_name}> @@@")
 
         mask_flatten = []
         spatial_shapes = []
@@ -1087,7 +1094,10 @@ class PETRTransformer(Transformer):
         reference_points = reference_points_pose.reshape(
             pos_num,
             reference_points_pose.size(1) // 2, 2) 
-            # reference_points: torch.Size([3, 17, 2]) => (?, 17(joints), 2)
+            # reference_points: torch.Size([3, 17, 2]) => (#valid_poses(==#instances), 17(joints), 2)
+        print(f"reference_points_pose: ({reference_points_pose.shape})\n{reference_points_pose}")
+        print(f"Reference Points: ({reference_points.shape})\n{reference_points}")
+
         query = query.permute(1, 0, 2) 
         #query: torch.Size([17, 3, 256]) => (17, ?, query_dim)
         query_pos = query_pos.permute(1, 0, 2) 
@@ -1098,13 +1108,7 @@ class PETRTransformer(Transformer):
         #mask_flatten: torch.Size([3, 30734]) => (?, sum(hw))
         valid_ratios = valid_ratios[img_inds, ...]
 
-        # print("<refine_decoder's inputs>")
-        # print(f"\tquery: {query.shape}")
-        # print(f"\tquery_pos: {query_pos.shape}")
-        # print(f"\tpos_memory: {pos_memory.shape}")
-        # print(f"\tmask_flatten: {mask_flatten.shape}")
-        # print(f"\treference_points: {reference_points.shape}")
-
+        print("\n************Start Joint Decoder************")
         inter_states, inter_references = self.refine_decoder(
             query=query,
             key=None,
@@ -1117,13 +1121,10 @@ class PETRTransformer(Transformer):
             valid_ratios=valid_ratios,
             reg_branches=kpt_branches,
             **kwargs)
-        # [num_decoder, num_query, bs, embed_dim]
 
-        # print("<refine_decoder's outputs & return>")
-        # print(f"\tinter_states: {inter_states.shape}")
-        # torch.Size([2, 17, 3, 256]) => (2, 17, ?, query_dim)
-        # print(f"\tinter_references: {inter_references.shape}")
-        # torch.Size([2, 3, 17, 2]) => (2, ?, 17, 2)
+        print(f"\ninter_states: {inter_states.shape}") # torch.Size([2, 17, 3, 256])
+        print(f"inter_references: {inter_references.shape}") # torch.Size([2, 3, 17, 2])
+        print("************End Joint Decoder************\n")        
 
         init_reference_out = reference_points
         

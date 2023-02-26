@@ -82,7 +82,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=1, #TODO 2인데 1로 바꿈. 여기가 배치 크기가 됨
     workers_per_gpu=2,
     
     train=dict(

@@ -6,3 +6,4 @@ work_dirs/
 *.pth
 *.png
 opera.code-workspace
+_results/
